@@ -766,8 +766,8 @@
 
             if (data) {
                 diseaseTreatment.innerHTML = `
-                    <strong>Описание:</strong><br>${data.description}<br><br>
-                    <strong>Методы борьбы:</strong><br>${data.treatment}<br>
+                    <strong>Описание:</strong> ${data.description}<br><br>
+                    <strong>Методы борьбы:</strong> ${data.treatment}<br>
                 `;
             } else {
                 diseaseTreatment.textContent = 'Информация о данной болезни временно отсутствует в нашей базе данных.';
@@ -797,11 +797,11 @@
             const data = strawberryData[strawberryType];
             if (data) {
                 infoText.innerHTML = `
-                    <strong>Описание:</strong>${data.description}<br><br>
-                    <strong>Происхождение:</strong>${data.origin}<br><br>
-                    <strong>Срок созревания:</strong>${data.maturity}<br><br>
-                    <strong>Цвет и форма:</strong>${data.color_and_shape}<br><br>
-                    <strong>Выращивание:</strong>${data.farming}<br><br>
+                    <strong>Описание:</strong> ${data.description}<br><br>
+                    <strong>Происхождение:</strong> ${data.origin}<br><br>
+                    <strong>Срок созревания:</strong> ${data.maturity}<br><br>
+                    <strong>Цвет и форма:</strong> ${data.color_and_shape}<br><br>
+                    <strong>Выращивание:</strong> ${data.farming}<br>
                 `;
             } else {
                 infoText.textContent = 'Информация о данном сорте клубники временно отсутствует в нашей базе данных.';
@@ -810,4 +810,5 @@
     </script>
 </body>
 </html>
+
 
