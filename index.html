@@ -302,6 +302,9 @@
                     <button id="modeRipeness" class="btn btn-secondary" style="flex: 1;">
                         <i>✅</i> Определить зрелость
                     </button>
+                    <button id="modeDisease" class="btn btn-secondary" style="flex: 1;">
+                        <i>🦠</i> Определить болезнь
+                    </button>
                 </div>
 
                 <!-- Кнопки загрузки -->
@@ -363,6 +366,19 @@
                 </div>
             </div>
 
+            <!-- Блок результатов по болезням -->
+            <div class="result-section" id="diseaseResultSection" style="display: none;">
+                <h2 class="result-title">Результат по болезни</h2>
+                <div class="result-content">
+                    <img id="diseaseResultImage" class="result-image" src="" alt="Распознанное изображение">
+                    <div class="prediction" id="diseasePredictionResults"></div>
+                    <div class="strawberry-info" id="diseaseInfo">
+                        <h3 class="info-title">Методы борьбы</h3>
+                        <p class="info-text" id="diseaseTreatment">Информация появится после анализа</p>
+                    </div>
+                </div>
+            </div>
+
             <div class="loader" id="loader"></div>
         </div>
     </div> <!-- Закрытие .container -->
@@ -402,7 +418,10 @@
         let model = null;
         let modelRipeness = null;
         let stream = null;
-        let currentMode = 'sort'; // 'sort' или 'ripeness'
+        let modelDisease = null; // модель болезней
+        let diseaseData = {};   // данные о болезнях
+        let currentMode = 'sort'; // 'sort', 'ripeness', 'disease'
+
 
         // Загрузка модели при загрузке страницы
         let strawberryData = {};
@@ -443,6 +462,40 @@
                 }
             }
 
+            // Загрузка данных о болезнях
+            try {
+                const response = await fetch('disease_data.json');
+                if (!response.ok) {
+                    throw new Error(`Ошибка загрузки данных о болезнях: ${response.status}`);
+                }
+                diseaseData = await response.json();
+                console.log('✅ Данные о болезнях клубники загружены:', diseaseData);
+            } catch (error) {
+                console.error('❌ Не удалось загрузить данные о болезнях:', error);
+                diseaseData = {
+                    'Бурая пятнистость': { description: 'Информация временно недоступна.', treatment: '' },
+                    'Гниль': { description: 'Информация временно недоступна.', treatment: '' },
+                    'Пятна': { description: 'Информация временно недоступна.', treatment: '' },
+                    'Скручивание листьев': { description: 'Информация временно недоступна.', treatment: '' },
+                    'Засыхание': { description: 'Информация временно недоступна.', treatment: '' },
+                    'Отверстия в листьях': { description: 'Информация временно недоступна.', treatment: '' }
+                };
+            }
+
+            // Загрузка модели болезней
+            async function loadDiseaseModel() {
+                const modelURL = 'model_disease/model.json';
+                const metadataURL = 'model_disease/metadata.json';
+
+                try {
+                    modelDisease = await tmImage.load(modelURL, metadataURL);
+                    console.log('✅ Модель болезней загружена успешно');
+                } catch (error) {
+                    console.error('❌ Ошибка загрузки модели болезней:', error);
+                    alert('Не удалось загрузить модель болезней. Убедитесь, что файлы доступны по пути "model_disease/".');
+                }
+            }
+
             async function loadRipenessModel() {
                 const modelURL = 'model_ripeness/model.json';
                 const metadataURL = 'model_ripeness/metadata.json';
@@ -460,6 +513,7 @@
 
             loadModel();
             loadRipenessModel();
+            loadDiseaseModel();
         });
 
         // Переключение режимов
@@ -480,6 +534,18 @@
             document.getElementById('modeSort').classList.add('btn-secondary');
             document.getElementById('modeSort').classList.remove('btn-primary');
             analyzeBtn.textContent = '🔍 Определить зрелость';
+            resetResults();
+        });
+
+        document.getElementById('modeDisease').addEventListener('click', () => {
+            currentMode = 'disease';
+            document.getElementById('modeDisease').classList.add('btn-primary');
+            document.getElementById('modeDisease').classList.remove('btn-secondary');
+            document.getElementById('modeSort').classList.add('btn-secondary');
+            document.getElementById('modeSort').classList.remove('btn-primary');
+            document.getElementById('modeRipeness').classList.add('btn-secondary');
+            document.getElementById('modeRipeness').classList.remove('btn-primary');
+            analyzeBtn.textContent = '🔍 Определить болезнь';
             resetResults();
         });
 
@@ -579,7 +645,11 @@
                 return;
             }
 
-            if ((currentMode === 'sort' && !model) || (currentMode === 'ripeness' && !modelRipeness)) {
+            if (
+                (currentMode === 'sort' && !model) ||
+                (currentMode === 'ripeness' && !modelRipeness) ||
+                (currentMode === 'disease' && !modelDisease)
+            ) {
                 alert('Модель ещё не загружена. Подождите.');
                 return;
             }
@@ -593,15 +663,25 @@
                     displayResults(predictions);
                     resultSection.style.display = 'block';
                     ripenessResultSection.style.display = 'none';
+                    diseaseResultSection.style.display = 'none';
                 } else if (currentMode === 'ripeness') {
                     predictions = await modelRipeness.predict(currentImage);
                     displayRipenessResults(predictions);
                     resultSection.style.display = 'none';
                     ripenessResultSection.style.display = 'block';
+                    diseaseResultSection.style.display = 'none';
+                } else if (currentMode === 'disease') {
+                    predictions = await modelDisease.predict(currentImage);
+                    displayDiseaseResults(predictions);
+                    resultSection.style.display = 'none';
+                    ripenessResultSection.style.display = 'none';
+                    diseaseResultSection.style.display = 'block';
                 }
 
                 loader.style.display = 'none';
-                (currentMode === 'sort' ? resultSection : ripenessResultSection).scrollIntoView({ behavior: 'smooth' });
+                (currentMode === 'sort' ? resultSection :
+                currentMode === 'ripeness' ? ripenessResultSection :
+                diseaseResultSection).scrollIntoView({ behavior: 'smooth' });
             } catch (error) {
                 console.error('Ошибка при распознавании:', error);
                 alert('Произошла ошибка при распознавании изображения.');
@@ -658,16 +738,56 @@
             `;
         }
 
+        function displayDiseaseResults(predictions) {
+            const diseasePredictionResults = document.getElementById('diseasePredictionResults');
+            diseasePredictionResults.innerHTML = '';
+            predictions.sort((a, b) => b.probability - a.probability);
+
+            predictions.forEach(prediction => {
+                const predictionItem = document.createElement('div');
+                predictionItem.className = 'prediction-item';
+                predictionItem.innerHTML = `
+                    <div class="prediction-name">${prediction.className}</div>
+                    <div class="prediction-confidence">${(prediction.probability * 100).toFixed(2)}%</div>
+                `;
+                diseasePredictionResults.appendChild(predictionItem);
+            });
+
+            const diseaseResultImage = document.getElementById('diseaseResultImage');
+            diseaseResultImage.src = currentImage.src;
+
+            const topPrediction = predictions[0];
+            displayDiseaseInfo(topPrediction.className);
+        }
+
+        function displayDiseaseInfo(diseaseName) {
+            const data = diseaseData[diseaseName];
+            const diseaseTreatment = document.getElementById('diseaseTreatment');
+
+            if (data) {
+                diseaseTreatment.innerHTML = `
+                    <strong>Описание:</strong><br>${data.description}<br><br>
+                    <strong>Методы борьбы:</strong><br>${data.treatment}
+                `;
+            } else {
+                diseaseTreatment.textContent = 'Информация о данной болезни временно отсутствует в нашей базе данных.';
+            }
+        }
+
         // Сброс результатов
         function resetResults() {
             resultSection.style.display = 'none';
             ripenessResultSection.style.display = 'none';
+            diseaseResultSection.style.display = 'none'; // <-- новая строка
             predictionResults.innerHTML = '';
             ripenessPredictionResults.innerHTML = '';
+            diseasePredictionResults.innerHTML = ''; // <-- новая строка
             infoText.textContent = 'Информация появится после определения сорта';
             ripenessStats.textContent = 'Информация появится после анализа';
+            diseaseTreatment.textContent = 'Информация появится после анализа'; // <-- новая строка
             resultImage.src = '';
             ripenessResultImage.src = '';
+            diseaseResultImage.src = ''; // <-- новая строка
             currentImage = null;
             analyzeBtn.disabled = true;
         }
