@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel='icon' type=image/png href="icon.png">
+    <title>Определитель сортов и зрелости клубники</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        h1 {
+            color: #e91e63;
+            margin-bottom: 10px;
+            font-size: 2.2rem;
+        }
+
+        .description {
+            color: #555;
+            font-size: 1.1rem;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 800px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .upload-section {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .upload-options {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #e91e63;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #c2185b;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(233, 30, 99, 0.3);
+        }
+
+        .btn-secondary {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #388E3C;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .preview-container {
+            width: 100%;
+            max-width: 400px;
+            height: 300px;
+            border: 2px dashed #ddd;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .preview-container img, .preview-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+
+        .preview-placeholder {
+            text-align: center;
+            color: #888;
+            padding: 20px;
+        }
+
+        .preview-placeholder i {
+            font-size: 50px;
+            margin-bottom: 15px;
+            color: #ccc;
+        }
+
+        .camera-container {
+            width: 100%;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .camera-view {
+            width: 100%;
+            max-width: 400px;
+            height: 300px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .result-section {
+            width: 100%;
+            display: none;
+        }
+
+        .result-title {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #e91e63;
+        }
+
+        .result-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .result-image {
+            width: 100%;
+            max-width: 300px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .prediction {
+            width: 100%;
+            max-width: 500px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .prediction-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .prediction-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .prediction-name {
+            font-weight: 600;
+        }
+
+        .prediction-confidence {
+            font-weight: 600;
+            color: #e91e63;
+        }
+
+        .strawberry-info {
+            width: 100%;
+            max-width: 500px;
+            background: #f0f7ff;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .info-title {
+            color: #2196F3;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        .info-text {
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .loader {
+            display: none;
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #e91e63;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        footer {
+            text-align: center;
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .btn {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+
+            .upload-options {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Определитель сортов и зрелости клубники</h1>
+        <p class="description">Загрузите фото клубники или сделайте снимок, чтобы определить сорт или зрелость ягод</p>
+    </header>
+
+    <div class="container">
+        <div class="upload-section">
+            <div class="upload-options">
+                <!-- Режимы -->
+                <div style="display: flex; gap: 10px; margin-bottom: 15px; justify-content: center; width: 100%;">
+                    <button id="modeSort" class="btn btn-primary" style="flex: 1;">
+                        <i>🍓</i> Определить сорт
+                    </button>
+                    <button id="modeRipeness" class="btn btn-secondary" style="flex: 1;">
+                        <i>✅</i> Определить зрелость
+                    </button>
+                </div>
+
+                <!-- Кнопки загрузки -->
+                <button id="uploadBtn" class="btn btn-primary">
+                    <i>📁</i> Загрузить фото
+                </button>
+                <button id="cameraBtn" class="btn btn-secondary">
+                    <i>📷</i> Сделать фото
+                </button>
+                <button id="retakeBtn" class="btn btn-secondary" style="margin-left: 10px;">
+                    <i>🔄</i> Переснять
+                </button>
+                <button id="analyzeBtn" class="btn btn-primary" disabled>
+                    <i>🔍</i> Определить
+                </button>
+            </div>
+
+            <div class="preview-container">
+                <div class="preview-placeholder">
+                    <i>🍓</i>
+                    <p>Загрузите фото клубники или сделайте снимок</p>
+                </div>
+                <img id="previewImage" src="" alt="Предпросмотр">
+                <video id="cameraView" autoplay playsinline></video>
+            </div>
+
+            <div class="camera-container" id="cameraContainer">
+                <div class="camera-view">
+                    <video id="cameraStream" autoplay playsinline></video>
+                </div>
+                <button id="captureBtn" class="btn btn-primary">
+                    <i>📸</i> Сделать снимок
+                </button>
+            </div>
+
+            <!-- Основной блок результатов (для сортов) -->
+            <div class="result-section" id="resultSection" style="display: none;">
+                <h2 class="result-title">Результат распознавания</h2>
+                <div class="result-content">
+                    <img id="resultImage" class="result-image" src="" alt="Распознанное изображение">
+                    <div class="prediction" id="predictionResults"></div>
+                    <div class="strawberry-info">
+                        <h3 class="info-title">Информация о сорте</h3>
+                        <p class="info-text" id="infoText">Информация появится после определения сорта</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Блок результатов по зрелости -->
+            <div class="result-section" id="ripenessResultSection" style="display: none;">
+                <h2 class="result-title">Результат по зрелости ягод</h2>
+                <div class="result-content">
+                    <img id="ripenessResultImage" class="result-image" src="" alt="Распознанное изображение">
+                    <div class="prediction" id="ripenessPredictionResults"></div>
+                    <div class="strawberry-info" id="ripenessInfo">
+                        <h3 class="info-title">Статистика зрелости</h3>
+                        <p class="info-text" id="ripenessStats">Информация появится после анализа</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="loader" id="loader"></div>
+        </div>
+    </div> <!-- Закрытие .container -->
+
+    <footer>
+        <p>Приложение для распознавания сортов и зрелости клубники с использованием Teachable Machine</p>
+    </footer>
+
+    <!-- Убраны пробелы в конце URL -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.18.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8.3/dist/teachablemachine-image.min.js"></script>
+
+    <script>
+        // Элементы DOM
+        const uploadBtn = document.getElementById('uploadBtn');
+        const cameraBtn = document.getElementById('cameraBtn');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const captureBtn = document.getElementById('captureBtn');
+        const retakeBtn = document.getElementById('retakeBtn');
+        const previewPlaceholder = document.querySelector('.preview-placeholder');
+        const previewImage = document.getElementById('previewImage');
+        const cameraView = document.getElementById('cameraView');
+        const cameraContainer = document.getElementById('cameraContainer');
+        const cameraStream = document.getElementById('cameraStream');
+        const resultSection = document.getElementById('resultSection');
+        const resultImage = document.getElementById('resultImage');
+        const predictionResults = document.getElementById('predictionResults');
+        const infoText = document.getElementById('infoText');
+        const ripenessResultSection = document.getElementById('ripenessResultSection');
+        const ripenessResultImage = document.getElementById('ripenessResultImage');
+        const ripenessPredictionResults = document.getElementById('ripenessPredictionResults');
+        const ripenessStats = document.getElementById('ripenessStats');
+        const loader = document.getElementById('loader');
+
+        // Переменные для хранения состояния
+        let currentImage = null;
+        let model = null;
+        let modelRipeness = null;
+        let stream = null;
+        let currentMode = 'sort'; // 'sort' или 'ripeness'
+
+        // Загрузка модели при загрузке страницы
+        let strawberryData = {};
+
+// Загрузка данных о сортах при загрузке страницы
+// Загрузка данных и моделей при загрузке страницы
+        window.addEventListener('DOMContentLoaded', async () => {
+            // Сначала загружаем данные о сортах
+            try {
+                const response = await fetch('strawberry_data.json');
+                if (!response.ok) {
+                    throw new Error(`Ошибка загрузки данных: ${response.status}`);
+                }
+                strawberryData = await response.json();
+                console.log('✅ Данные о сортах клубники загружены:', strawberryData);
+            } catch (error) {
+                console.error('❌ Не удалось загрузить данные о сортах:', error);
+                strawberryData = {
+                    'Клери': { description: 'Информация временно недоступна.' },
+                    'Даренка': { description: 'Информация временно недоступна.' },
+                    'Рубиновый кулон': { description: 'Информация временно недоступна.' },
+                    'Мурано': { description: 'Информация временно недоступна.' }
+                };
+            }
+
+            // Теперь загружаем модели
+            async function loadModel() {
+                const modelURL = 'model/model.json';
+                const metadataURL = 'model/metadata.json';
+
+                try {
+                    loader.style.display = 'block';
+                    model = await tmImage.load(modelURL, metadataURL);
+                    console.log('✅ Модель сортов загружена успешно');
+                } catch (error) {
+                    console.error('❌ Ошибка загрузки модели сортов:', error);
+                    alert('Не удалось загрузить модель сортов. Убедитесь, что файлы доступны по пути "model/".');
+                }
+            }
+
+            async function loadRipenessModel() {
+                const modelURL = 'model_ripeness/model.json';
+                const metadataURL = 'model_ripeness/metadata.json';
+
+                try {
+                    modelRipeness = await tmImage.load(modelURL, metadataURL);
+                    console.log('✅ Модель зрелости загружена успешно');
+                } catch (error) {
+                    console.error('❌ Ошибка загрузки модели зрелости:', error);
+                    alert('Не удалось загрузить модель зрелости. Убедитесь, что файлы доступны по пути "model_ripeness/".');
+                } finally {
+                    loader.style.display = 'none';
+                }
+            }
+
+            loadModel();
+            loadRipenessModel();
+        });
+
+        // Переключение режимов
+        document.getElementById('modeSort').addEventListener('click', () => {
+            currentMode = 'sort';
+            document.getElementById('modeSort').classList.add('btn-primary');
+            document.getElementById('modeSort').classList.remove('btn-secondary');
+            document.getElementById('modeRipeness').classList.add('btn-secondary');
+            document.getElementById('modeRipeness').classList.remove('btn-primary');
+            analyzeBtn.textContent = '🔍 Определить сорт';
+            resetResults();
+        });
+
+        document.getElementById('modeRipeness').addEventListener('click', () => {
+            currentMode = 'ripeness';
+            document.getElementById('modeRipeness').classList.add('btn-primary');
+            document.getElementById('modeRipeness').classList.remove('btn-secondary');
+            document.getElementById('modeSort').classList.add('btn-secondary');
+            document.getElementById('modeSort').classList.remove('btn-primary');
+            analyzeBtn.textContent = '🔍 Определить зрелость';
+            resetResults();
+        });
+
+        // Обработчик загрузки изображения
+        uploadBtn.addEventListener('click', () => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+
+            input.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        previewPlaceholder.style.display = 'none';
+                        previewImage.src = event.target.result;
+                        previewImage.style.display = 'block';
+                        cameraView.style.display = 'none';
+                        cameraContainer.style.display = 'none';
+                        currentImage = previewImage;
+                        analyzeBtn.disabled = false;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+            input.click();
+        });
+
+        // Обработчик включения камеры
+        cameraBtn.addEventListener('click', async () => {
+            resetResults();
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                cameraStream.srcObject = stream;
+                previewPlaceholder.style.display = 'none';
+                previewImage.style.display = 'none';
+                cameraView.style.display = 'none';
+                cameraContainer.style.display = 'flex';
+                analyzeBtn.disabled = true;
+            } catch (error) {
+                console.error('Ошибка доступа к камере:', error);
+                let msg = 'Не удалось получить доступ к камере.\n\n';
+                if (error.name === 'NotAllowedError') {
+                    msg += 'Разрешите доступ к камере в настройках браузера.';
+                } else if (error.name === 'NotFoundError') {
+                    msg += 'Камера не найдена.';
+                } else if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
+                    msg += 'Камера работает только на HTTPS или localhost.';
+                } else {
+                    msg += 'Проверьте подключение камеры и разрешения.';
+                }
+                alert(msg);
+            }
+        });
+
+        // Обработчик захвата фото с камеры
+        captureBtn.addEventListener('click', () => {
+            if (!stream || !cameraStream.srcObject) {
+                alert('Камера не готова. Подождите.');
+                return;
+            }
+
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.width = cameraStream.videoWidth;
+            canvas.height = cameraStream.videoHeight;
+            context.drawImage(cameraStream, 0, 0, canvas.width, canvas.height);
+
+            previewImage.src = canvas.toDataURL('image/jpeg', 0.92);
+            previewImage.style.display = 'block';
+            previewPlaceholder.style.display = 'none';
+            cameraContainer.style.display = 'none';
+
+            currentImage = previewImage;
+            analyzeBtn.disabled = false;
+
+            // Остановка потока
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+        });
+
+        // Обработчик кнопки "Переснять"
+        retakeBtn.addEventListener('click', () => {
+            resetResults();
+            cameraBtn.click(); // Перезапускаем камеру
+        });
+
+        // Обработчик анализа изображения
+        analyzeBtn.addEventListener('click', async () => {
+            if (!currentImage) {
+                alert('Пожалуйста, загрузите изображение.');
+                return;
+            }
+
+            if ((currentMode === 'sort' && !model) || (currentMode === 'ripeness' && !modelRipeness)) {
+                alert('Модель ещё не загружена. Подождите.');
+                return;
+            }
+
+            try {
+                loader.style.display = 'block';
+                let predictions;
+
+                if (currentMode === 'sort') {
+                    predictions = await model.predict(currentImage);
+                    displayResults(predictions);
+                    resultSection.style.display = 'block';
+                    ripenessResultSection.style.display = 'none';
+                } else if (currentMode === 'ripeness') {
+                    predictions = await modelRipeness.predict(currentImage);
+                    displayRipenessResults(predictions);
+                    resultSection.style.display = 'none';
+                    ripenessResultSection.style.display = 'block';
+                }
+
+                loader.style.display = 'none';
+                (currentMode === 'sort' ? resultSection : ripenessResultSection).scrollIntoView({ behavior: 'smooth' });
+            } catch (error) {
+                console.error('Ошибка при распознавании:', error);
+                alert('Произошла ошибка при распознавании изображения.');
+                loader.style.display = 'none';
+            }
+        });
+
+        // Функция отображения результатов сортов
+        function displayResults(predictions) {
+            predictionResults.innerHTML = '';
+            predictions.sort((a, b) => b.probability - a.probability);
+            const topPredictions = predictions.slice(0, 3);
+
+            topPredictions.forEach(prediction => {
+                const predictionItem = document.createElement('div');
+                predictionItem.className = 'prediction-item';
+                predictionItem.innerHTML = `
+                    <div class="prediction-name">${prediction.className}</div>
+                    <div class="prediction-confidence">${(prediction.probability * 100).toFixed(2)}%</div>
+                `;
+                predictionResults.appendChild(predictionItem);
+            });
+
+            resultImage.src = currentImage.src;
+            const topPrediction = topPredictions[0];
+            displayStrawberryInfo(topPrediction.className);
+        }
+
+        // Функция отображения результатов зрелости
+        function displayRipenessResults(predictions) {
+            ripenessPredictionResults.innerHTML = '';
+            predictions.sort((a, b) => b.probability - a.probability);
+
+            predictions.forEach(prediction => {
+                const predictionItem = document.createElement('div');
+                predictionItem.className = 'prediction-item';
+                predictionItem.innerHTML = `
+                    <div class="prediction-name">${prediction.className}</div>
+                    <div class="prediction-confidence">${(prediction.probability * 100).toFixed(2)}%</div>
+                `;
+                ripenessPredictionResults.appendChild(predictionItem);
+            });
+
+            ripenessResultImage.src = currentImage.src;
+
+            const ripe = predictions.find(p => p.className === 'Спелые')?.probability || 0;
+            const unripe = predictions.find(p => p.className === 'Не спелые')?.probability || 0;
+            const background = predictions.find(p => p.className === 'Фон')?.probability || 0;
+
+            ripenessStats.innerHTML = `
+                <strong>Спелые:</strong> ${(ripe * 100).toFixed(1)}%<br>
+                <strong>Не спелые:</strong> ${(unripe * 100).toFixed(1)}%<br>
+                <strong>Фон:</strong> ${(background * 100).toFixed(1)}%
+            `;
+        }
+
+        // Сброс результатов
+        function resetResults() {
+            resultSection.style.display = 'none';
+            ripenessResultSection.style.display = 'none';
+            predictionResults.innerHTML = '';
+            ripenessPredictionResults.innerHTML = '';
+            infoText.textContent = 'Информация появится после определения сорта';
+            ripenessStats.textContent = 'Информация появится после анализа';
+            resultImage.src = '';
+            ripenessResultImage.src = '';
+            currentImage = null;
+            analyzeBtn.disabled = true;
+        }
+
+        // Информация о сортах
+        function displayStrawberryInfo(strawberryType) {
+            const data = strawberryData[strawberryType];
+            if (data) {
+                infoText.innerHTML = `
+                    <strong>Описание:</strong><br>${data.description}<br><br>
+                    <strong>Происхождение:</strong> ${data.origin}<br>
+                    <strong>Срок созревания:</strong> ${data.maturity}<br>
+                    <strong>Цвет и форма:</strong> ${data.color_and_shape}<br>
+                `;
+            } else {
+                infoText.textContent = 'Информация о данном сорте клубники временно отсутствует в нашей базе данных.';
+            }
+        }
+    </script>
+</body>
+</html>
