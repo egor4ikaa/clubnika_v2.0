@@ -359,10 +359,6 @@
                 <div class="result-content">
                     <img id="ripenessResultImage" class="result-image" src="" alt="Распознанное изображение">
                     <div class="prediction" id="ripenessPredictionResults"></div>
-                    <div class="strawberry-info" id="ripenessInfo">
-                        <h3 class="info-title">Статистика зрелости</h3>
-                        <p class="info-text" id="ripenessStats">Информация появится после анализа</p>
-                    </div>
                 </div>
             </div>
 
@@ -375,6 +371,17 @@
                     <div class="strawberry-info" id="diseaseInfo">
                         <h3 class="info-title">Методы борьбы</h3>
                         <p class="info-text" id="diseaseTreatment">Информация появится после анализа</p>
+                    </div>
+                </div>
+            </div>
+            <div id="modeSwitchModal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <h3>Выберите действие</h3>
+                    <p>Вы уже загрузили фото. Что вы хотите сделать?</p>
+                    <div class="modal-buttons">
+                        <button id="useCurrentPhoto" class="btn btn-primary">Использовать текущее фото</button>
+                        <button id="retakePhoto" class="btn btn-secondary">Переснять</button>
                     </div>
                 </div>
             </div>
@@ -421,6 +428,7 @@
         let modelDisease = null; // модель болезней
         let diseaseData = {};   // данные о болезнях
         let currentMode = 'sort'; // 'sort', 'ripeness', 'disease'
+        let previousMode = 'sort'
 
 
         // Загрузка модели при загрузке страницы
@@ -515,38 +523,94 @@
             loadRipenessModel();
             loadDiseaseModel();
         });
+        function showModeSwitchModal() {
+                document.getElementById('modeSwitchModal').style.display = 'flex';
+            }
 
+            // Закрытие на крестик
+            document.querySelector('.close').addEventListener('click', () => {
+                document.getElementById('modeSwitchModal').style.display = 'none';
+            });
+
+            // Кнопка "Использовать текущее фото"
+            document.getElementById('useCurrentPhoto').addEventListener('click', () => {
+                document.getElementById('modeSwitchModal').style.display = 'none';
+                // Сбрасываем только результаты, фото остаётся
+                resetResultsExceptImage();
+                analyzeBtn.disabled = false;
+                analyzeBtn.click(); // автоматический запуск анализа
+            });
+
+            // Кнопка "Переснять"
+            document.getElementById('retakePhoto').addEventListener('click', () => {
+                document.getElementById('modeSwitchModal').style.display = 'none';
+                resetResults(); // сбрасываем ВСЁ, включая фото
+                cameraBtn.click(); // открываем камеру
+            });
+        // Переключение режимов
         // Переключение режимов
         document.getElementById('modeSort').addEventListener('click', () => {
-            currentMode = 'sort';
-            document.getElementById('modeSort').classList.add('btn-primary');
-            document.getElementById('modeSort').classList.remove('btn-secondary');
-            document.getElementById('modeRipeness').classList.add('btn-secondary');
-            document.getElementById('modeRipeness').classList.remove('btn-primary');
-            analyzeBtn.textContent = '🔍 Определить сорт';
-            resetResults();
+            if (currentImage && currentMode !== 'sort') {
+                previousMode = currentMode;
+                currentMode = 'sort';
+                showModeSwitchModal();
+            } else {
+                currentMode = 'sort';
+                document.getElementById('modeSort').classList.add('btn-primary');
+                document.getElementById('modeSort').classList.remove('btn-secondary');
+                document.getElementById('modeRipeness').classList.add('btn-secondary');
+                document.getElementById('modeRipeness').classList.remove('btn-primary');
+                document.getElementById('modeDisease').classList.add('btn-secondary');
+                document.getElementById('modeDisease').classList.remove('btn-primary');
+                analyzeBtn.textContent = '🔍 Определить сорт';
+                // Не сбрасываем фото, если оно есть
+                if (currentImage) {
+                    analyzeBtn.disabled = false;
+                }
+                resetResultsExceptImage(); // сбрасываем только результаты, не фото
+            }
         });
 
         document.getElementById('modeRipeness').addEventListener('click', () => {
-            currentMode = 'ripeness';
-            document.getElementById('modeRipeness').classList.add('btn-primary');
-            document.getElementById('modeRipeness').classList.remove('btn-secondary');
-            document.getElementById('modeSort').classList.add('btn-secondary');
-            document.getElementById('modeSort').classList.remove('btn-primary');
-            analyzeBtn.textContent = '🔍 Определить зрелость';
-            resetResults();
+            if (currentImage && currentMode !== 'ripeness') {
+                previousMode = currentMode;
+                currentMode = 'ripeness';
+                showModeSwitchModal();
+            } else {
+                currentMode = 'ripeness';
+                document.getElementById('modeRipeness').classList.add('btn-primary');
+                document.getElementById('modeRipeness').classList.remove('btn-secondary');
+                document.getElementById('modeSort').classList.add('btn-secondary');
+                document.getElementById('modeSort').classList.remove('btn-primary');
+                document.getElementById('modeDisease').classList.add('btn-secondary');
+                document.getElementById('modeDisease').classList.remove('btn-primary');
+                analyzeBtn.textContent = '🔍 Определить зрелость';
+                if (currentImage) {
+                    analyzeBtn.disabled = false;
+                }
+                resetResultsExceptImage();
+            }
         });
 
         document.getElementById('modeDisease').addEventListener('click', () => {
-            currentMode = 'disease';
-            document.getElementById('modeDisease').classList.add('btn-primary');
-            document.getElementById('modeDisease').classList.remove('btn-secondary');
-            document.getElementById('modeSort').classList.add('btn-secondary');
-            document.getElementById('modeSort').classList.remove('btn-primary');
-            document.getElementById('modeRipeness').classList.add('btn-secondary');
-            document.getElementById('modeRipeness').classList.remove('btn-primary');
-            analyzeBtn.textContent = '🔍 Определить болезнь';
-            resetResults();
+            if (currentImage && currentMode !== 'disease') {
+                previousMode = currentMode;
+                currentMode = 'disease';
+                showModeSwitchModal();
+            } else {
+                currentMode = 'disease';
+                document.getElementById('modeDisease').classList.add('btn-primary');
+                document.getElementById('modeDisease').classList.remove('btn-secondary');
+                document.getElementById('modeSort').classList.add('btn-secondary');
+                document.getElementById('modeSort').classList.remove('btn-primary');
+                document.getElementById('modeRipeness').classList.add('btn-secondary');
+                document.getElementById('modeRipeness').classList.remove('btn-primary');
+                analyzeBtn.textContent = '🔍 Определить болезнь';
+                if (currentImage) {
+                    analyzeBtn.disabled = false;
+                }
+                resetResultsExceptImage();
+            }
         });
 
         // Обработчик загрузки изображения
@@ -715,6 +779,7 @@
             ripenessPredictionResults.innerHTML = '';
             predictions.sort((a, b) => b.probability - a.probability);
 
+            // Выводим классы
             predictions.forEach(prediction => {
                 const predictionItem = document.createElement('div');
                 predictionItem.className = 'prediction-item';
@@ -727,16 +792,23 @@
 
             ripenessResultImage.src = currentImage.src;
 
+            // Доп. статистика (если нужно — в том же блоке, без отдельного .strawberry-info)
             const ripe = predictions.find(p => p.className === 'Спелые')?.probability || 0;
             const unripe = predictions.find(p => p.className === 'Не спелые')?.probability || 0;
-            const background = predictions.find(p => p.className === 'Фон')?.probability || 0;
 
-            ripenessStats.innerHTML = `
-                <strong>Спелые:</strong> ${(ripe * 100).toFixed(1)}%<br>
-                <strong>Не спелые:</strong> ${(unripe * 100).toFixed(1)}%<br>
-                <strong>Фон:</strong> ${(background * 100).toFixed(1)}%
+            const summary = document.createElement('div');
+            summary.className = 'prediction-item';
+            summary.innerHTML = `
+                <div><strong>Итого:</strong></div>
+                <div>
+                    Спелые: ${(ripe * 100).toFixed(1)}%<br>
+                    Не спелые: ${(unripe * 100).toFixed(1)}%
+                </div>
             `;
+            ripenessPredictionResults.appendChild(summary);
         }
+
+
 
         function displayDiseaseResults(predictions) {
             const diseasePredictionResults = document.getElementById('diseasePredictionResults');
@@ -774,22 +846,37 @@
             }
         }
 
-        // Сброс результатов
+        // Сброс результатов и фото (только при необходимости)
         function resetResults() {
             resultSection.style.display = 'none';
             ripenessResultSection.style.display = 'none';
-            diseaseResultSection.style.display = 'none'; // <-- новая строка
+            diseaseResultSection.style.display = 'none';
             predictionResults.innerHTML = '';
             ripenessPredictionResults.innerHTML = '';
-            diseasePredictionResults.innerHTML = ''; // <-- новая строка
+            diseasePredictionResults.innerHTML = '';
             infoText.textContent = 'Информация появится после определения сорта';
-            ripenessStats.textContent = 'Информация появится после анализа';
-            diseaseTreatment.textContent = 'Информация появится после анализа'; // <-- новая строка
+            diseaseTreatment.textContent = 'Информация появится после анализа';
             resultImage.src = '';
             ripenessResultImage.src = '';
-            diseaseResultImage.src = ''; // <-- новая строка
-            currentImage = null;
+            diseaseResultImage.src = '';
+            currentImage = null; // теперь сбрасываем фото
             analyzeBtn.disabled = true;
+        }
+        // Сброс результатов, но без удаления фото
+        function resetResultsExceptImage() {
+            resultSection.style.display = 'none';
+            ripenessResultSection.style.display = 'none';
+            diseaseResultSection.style.display = 'none';
+            predictionResults.innerHTML = '';
+            ripenessPredictionResults.innerHTML = '';
+            diseasePredictionResults.innerHTML = '';
+            infoText.textContent = 'Информация появится после определения сорта';
+            ripenessStats.textContent = 'Информация появится после анализа';
+            diseaseTreatment.textContent = 'Информация появится после анализа';
+            resultImage.src = '';
+            ripenessResultImage.src = '';
+            diseaseResultImage.src = '';
+            // currentImage остается без изменений!
         }
 
         // Информация о сортах
@@ -810,5 +897,3 @@
     </script>
 </body>
 </html>
-
-
