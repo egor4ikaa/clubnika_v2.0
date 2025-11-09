@@ -581,16 +581,6 @@ body {
 }
 
 /* ==== ФУТЕР ==== */
-footer {
-    text-align: center;
-    color: #666;
-    font-size: 0.9rem;
-    margin-top: 40px;
-    padding: 20px;
-    width: 100%;
-    background: #f8f8f8;
-    border-top: 1px solid #eee;
-}
 
 /* ==== МОБИЛЬНЫЙ ==== */
 @media (max-width: 768px) {
@@ -626,4 +616,5 @@ footer {
     .upload-section {
         padding: 20px;
     }
+
 }
