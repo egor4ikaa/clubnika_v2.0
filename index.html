@@ -253,6 +253,19 @@
             animation: spin 1s linear infinite;
             margin: 20px auto;
         }
+        .footer-fixed {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #f8f8f8;
+            text-align: center;
+            padding: 10px 0;
+            font-size: 0.9rem;
+            color: #666;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            z-index: 1000;
+        }
 
         @keyframes spin {
             0% { transform: rotate(0deg); }
@@ -384,9 +397,9 @@
         </div>
     </div> <!-- Закрытие .container -->
 
-    <footer>
-        <p>Приложение для распознавания сортов и зрелости клубники с использованием Teachable Machine</p>
-    </footer>
+    <div class="footer-fixed">
+        Приложение для распознавания сортов и зрелости клубники с использованием Teachable Machine
+    </div>
 
     <!-- Убраны пробелы в конце URL -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.18.0"></script>
@@ -891,5 +904,6 @@
     </script>
 </body>
 </html>
+
 
 
