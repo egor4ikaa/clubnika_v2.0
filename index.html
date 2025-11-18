@@ -37,6 +37,43 @@
             font-size: 2.2rem;
         }
 
+        .mode-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .mode-btn {
+            padding: 14px 20px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: #f0f0f0;
+            color: #333;
+            border: 2px solid transparent;
+            min-width: 180px;
+        }
+
+        .mode-btn.active {
+            background: #e91e63;
+            color: white;
+            border-color: #c2185b;
+        }
+
+        .mode-btn:hover {
+            background: #ddd;
+            transform: translateY(-2px);
+        }
         .description {
             color: #555;
             font-size: 1.1rem;
@@ -69,13 +106,13 @@
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            gap: 15px;
+            gap: 10px;
             margin-bottom: 20px;
             width: 100%;
         }
 
         .btn {
-            padding: 12px 25px;
+            padding: 12px 20px;
             border: none;
             border-radius: 50px;
             font-size: 1rem;
@@ -86,6 +123,7 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
+            min-width: 160px;
         }
 
         .btn-primary {
@@ -267,6 +305,7 @@
             z-index: 1000;
         }
 
+
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
@@ -290,6 +329,42 @@
                 flex-direction: column;
             }
         }
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            /* Вертикальное расположение кнопок режимов */
+            .mode-buttons {
+                flex-direction: column;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .mode-btn {
+                width: 100%;
+                max-width: 300px;
+                min-width: unset;
+            }
+
+            /* Вертикальное расположение остальных кнопок */
+            .upload-options {
+                flex-direction: column;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .btn {
+                width: 100%;
+                max-width: 300px;
+                min-width: unset;
+                margin-bottom: 0;
+            }
+        }
     </style>
 </head>
 <body>
@@ -302,14 +377,14 @@
         <div class="upload-section">
             <div class="upload-options">
                 <!-- Режимы -->
-                <div style="display: flex; gap: 10px; margin-bottom: 15px; justify-content: center; width: 100%;">
-                    <button id="modeSort" class="btn btn-primary" style="flex: 1;">
+                <div class="mode-buttons">
+                    <button id="modeSort" class="mode-btn active">
                         <i>🍓</i> Определить сорт
                     </button>
-                    <button id="modeRipeness" class="btn btn-secondary" style="flex: 1;">
+                    <button id="modeRipeness" class="mode-btn">
                         <i>✅</i> Определить зрелость
                     </button>
-                    <button id="modeDisease" class="btn btn-secondary" style="flex: 1;">
+                    <button id="modeDisease" class="mode-btn">
                         <i>🦠</i> Определить болезнь
                     </button>
                 </div>
@@ -556,42 +631,43 @@
                 cameraBtn.click(); // открываем камеру
             });
         // Переключение режимов
-        // Переключение режимов
-        document.getElementById('modeSort').addEventListener('click', () => {
+
+        function setActiveMode(activeButton) {
+            // Сбрасываем все кнопки
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.remove('active');
+                btn.classList.add('btn-secondary');
+            });
+
+            // Активируем выбранную кнопку
+            activeButton.classList.add('active');
+            activeButton.classList.remove('btn-secondary');
+        }
+
+        document.getElementById('modeSort').addEventListener('click', function() {
             if (currentImage && currentMode !== 'sort') {
                 previousMode = currentMode;
                 currentMode = 'sort';
                 showModeSwitchModal();
             } else {
                 currentMode = 'sort';
-                document.getElementById('modeSort').classList.add('btn-primary');
-                document.getElementById('modeSort').classList.remove('btn-secondary');
-                document.getElementById('modeRipeness').classList.add('btn-secondary');
-                document.getElementById('modeRipeness').classList.remove('btn-primary');
-                document.getElementById('modeDisease').classList.add('btn-secondary');
-                document.getElementById('modeDisease').classList.remove('btn-primary');
+                setActiveMode(this);
                 analyzeBtn.textContent = '🔍 Определить сорт';
-                // Не сбрасываем фото, если оно есть
                 if (currentImage) {
                     analyzeBtn.disabled = false;
                 }
-                resetResultsExceptImage(); // сбрасываем только результаты, не фото
+                resetResultsExceptImage();
             }
         });
 
-        document.getElementById('modeRipeness').addEventListener('click', () => {
+        document.getElementById('modeRipeness').addEventListener('click', function() {
             if (currentImage && currentMode !== 'ripeness') {
                 previousMode = currentMode;
                 currentMode = 'ripeness';
                 showModeSwitchModal();
             } else {
                 currentMode = 'ripeness';
-                document.getElementById('modeRipeness').classList.add('btn-primary');
-                document.getElementById('modeRipeness').classList.remove('btn-secondary');
-                document.getElementById('modeSort').classList.add('btn-secondary');
-                document.getElementById('modeSort').classList.remove('btn-primary');
-                document.getElementById('modeDisease').classList.add('btn-secondary');
-                document.getElementById('modeDisease').classList.remove('btn-primary');
+                setActiveMode(this);
                 analyzeBtn.textContent = '🔍 Определить зрелость';
                 if (currentImage) {
                     analyzeBtn.disabled = false;
@@ -600,19 +676,14 @@
             }
         });
 
-        document.getElementById('modeDisease').addEventListener('click', () => {
+        document.getElementById('modeDisease').addEventListener('click', function() {
             if (currentImage && currentMode !== 'disease') {
                 previousMode = currentMode;
                 currentMode = 'disease';
                 showModeSwitchModal();
             } else {
                 currentMode = 'disease';
-                document.getElementById('modeDisease').classList.add('btn-primary');
-                document.getElementById('modeDisease').classList.remove('btn-secondary');
-                document.getElementById('modeSort').classList.add('btn-secondary');
-                document.getElementById('modeSort').classList.remove('btn-primary');
-                document.getElementById('modeRipeness').classList.add('btn-secondary');
-                document.getElementById('modeRipeness').classList.remove('btn-primary');
+                setActiveMode(this);
                 analyzeBtn.textContent = '🔍 Определить болезнь';
                 if (currentImage) {
                     analyzeBtn.disabled = false;
@@ -905,8 +976,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
