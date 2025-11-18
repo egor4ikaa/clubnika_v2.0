@@ -268,6 +268,7 @@ body {
     background: #f0f0f0;
     color: #333;
     border: 2px solid transparent;
+    min-width: 200px;
 }
 
 .mode-btn.active {
@@ -316,6 +317,7 @@ body {
     align-items: center;
     justify-content: center;
     gap: 8px;
+    min-width: 180px;
 }
 
 .btn-primary {
@@ -584,55 +586,45 @@ body {
 
 /* ==== МОБИЛЬНЫЙ ==== */
 @media (max-width: 768px) {
-    .hero h1 {
-        font-size: 2.5rem;
-    }
-
-    .hero p {
-        font-size: 1.1rem;
-    }
-
-    .hero-btns {
-        flex-direction: column;
-        width: 100%;
-    }
-
-    .about-content {
-        flex-direction: column;
-    }
-
-    .section {
-        padding: 60px 20px;
-    }
-
-    .section-title {
-        font-size: 2rem;
-    }
-
-    .mode-selector {
-        flex-direction: column;
-    }
-
-    .upload-section {
-        padding: 20px;
-    }
-    
     .mode-selector {
         flex-direction: column;
         align-items: center;
+        gap: 12px;
+        padding: 0 10px;
     }
 
     .mode-btn {
         width: 100%;
         max-width: 300px;
-        text-align: center;
+        min-width: unset;
+        padding: 14px 20px;
+        font-size: 1rem;
+    }
+
+    .upload-options {
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .btn {
+        width: 100%;
+        max-width: 300px;
+        min-width: unset;
+        padding: 14px 20px;
+        font-size: 1rem;
+    }
+
+    /* Улучшения для hero кнопок в мобильной версии */
+    .hero-btns {
+        flex-direction: column;
+        width: 100%;
+        max-width: 300px;
+        gap: 12px;
+    }
+
+    .hero-btn {
+        width: 100%;
         justify-content: center;
     }
-
-    /* Опционально: убрать gap для более плотного вертикального расположения */
-    .mode-selector {
-        gap: 10px;
-    }
-
 }
-
