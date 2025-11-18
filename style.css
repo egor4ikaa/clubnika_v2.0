@@ -616,5 +616,23 @@ body {
     .upload-section {
         padding: 20px;
     }
+    
+    .mode-selector {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .mode-btn {
+        width: 100%;
+        max-width: 300px;
+        text-align: center;
+        justify-content: center;
+    }
+
+    /* Опционально: убрать gap для более плотного вертикального расположения */
+    .mode-selector {
+        gap: 10px;
+    }
 
 }
+
